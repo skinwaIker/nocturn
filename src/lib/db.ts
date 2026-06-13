@@ -55,6 +55,8 @@ export interface Notification {
   created_at: string;
 }
 
+export const DEFAULT_AVATAR = 'https://i.pinimg.com/736x/07/fb/34/07fb3452c4640d881a16d08c2e314f3e.jpg';
+
 export interface Ban {
   id: string;
   user_id: string;

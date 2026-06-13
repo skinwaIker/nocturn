@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/lib/db';
+import { supabase, DEFAULT_AVATAR } from '@/lib/db';
 import { sanitize } from '@/lib/sanitize';
 import { uploadToLocalStorage } from '@/lib/fileUpload';
 import { Upload, Save } from 'lucide-react';
@@ -153,9 +153,8 @@ export function SettingsPage() {
                 style={{ borderColor: profile.rank?.color, borderWidth: 2 }}
               >
                 <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => {
-                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.src = DEFAULT_AVATAR;
                 }} />
-                <span className="hidden">{profile.username[0].toUpperCase()}</span>
               </div>
               <label className="cursor-pointer">
                 <Button variant="outline" size="sm" asChild>

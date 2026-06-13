@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase, type Profile, type Rank } from '@/lib/db';
+import { supabase, DEFAULT_AVATAR, type Profile, type Rank } from '@/lib/db';
 import { useNavigate } from 'react-router-dom';
 import { sanitize } from '@/lib/sanitize';
 
@@ -52,9 +52,11 @@ export function UsersPage() {
               style={{ borderColor: u.rank?.color, borderWidth: 2 }}
             >
               {u.avatar_url ? (
-                <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
+                <img src={u.avatar_url} alt="" className="w-full h-full object-cover" onError={(e) => {
+                  e.currentTarget.src = DEFAULT_AVATAR;
+                }} />
               ) : (
-                u.username[0].toUpperCase()
+                <img src={DEFAULT_AVATAR} alt="" className="w-full h-full object-cover" />
               )}
             </div>
             <div className="flex-1 min-w-0">

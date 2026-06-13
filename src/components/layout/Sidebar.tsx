@@ -1,6 +1,6 @@
 import { useAuth, useIsAdmin } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '@/lib/db';
+import { supabase, DEFAULT_AVATAR } from '@/lib/db';
 import {
   Bell,
   Users,
@@ -93,15 +93,14 @@ export function Sidebar() {
                   className="w-8 h-8 bg-[hsl(0,0%,15%)] flex items-center justify-center text-xs font-bold overflow-hidden flex-shrink-0"
                   style={{ borderColor: profile.rank?.color, borderWidth: 2 }}
                 >
-                  <img 
-                    src={getAvatarUrl(user.id)} 
-                    alt="" 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={getAvatarUrl(user.id)}
+                    alt=""
+                    className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.src = DEFAULT_AVATAR;
                     }}
                   />
-                  <span className="hidden">{profile.username[0].toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -171,7 +170,7 @@ export function Sidebar() {
               Notifications
             </button>
             {notifOpen && (
-              <div className="absolute left-full top-0 ml-2 w-72 bg-[hsl(0,0%,7%)] border border-[hsl(0,0%,14.9%)] rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+              <div className="absolute left-0 top-full mt-1 w-full bg-[hsl(0,0%,7%)] border border-[hsl(0,0%,14.9%)] rounded-lg shadow-xl z-50 max-h-72 overflow-y-auto">
                 <div className="p-3 border-b border-[hsl(0,0%,14.9%)] flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider">Notifications</span>
                   {unreadCount > 0 && (

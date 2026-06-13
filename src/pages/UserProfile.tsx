@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase, type Profile, type Paste, type Rank } from '@/lib/db';
+import { supabase, DEFAULT_AVATAR, type Profile, type Paste, type Rank } from '@/lib/db';
 import { sanitize } from '@/lib/sanitize';
 import {
   Clock,
@@ -143,10 +143,10 @@ export function UserProfilePage() {
         {/* Block 1: Avatar + Identity */}
         <div className="bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg overflow-hidden">
           <div className="h-24 overflow-hidden bg-[hsl(0,0%,8%)]">
-            <img 
-              src={bannerUrl} 
-              alt="" 
-              className="w-full h-full object-cover" 
+            <img
+              src={bannerUrl}
+              alt=""
+              className="w-full h-full object-cover"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
@@ -155,17 +155,14 @@ export function UserProfilePage() {
           <div className="-mt-8 p-5">
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 bg-[hsl(0,0%,8%)] flex items-center justify-center text-3xl font-bold overflow-hidden shrink-0">
-                <img 
-                  src={avatarUrl} 
-                  alt="" 
-                  className="w-full h-full object-cover" 
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.src = DEFAULT_AVATAR;
                   }}
                 />
-                <span className="hidden" style={{ color: profile.rank?.color }}>
-                  {profile.username[0].toUpperCase()}
-                </span>
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
                 <h2 className="text-lg font-bold tracking-tight truncate">
