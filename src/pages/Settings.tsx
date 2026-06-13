@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase, DEFAULT_AVATAR } from '@/lib/db';
 import { sanitize } from '@/lib/sanitize';
 import { uploadToLocalStorage } from '@/lib/fileUpload';
-import { Upload, Save } from 'lucide-react';
+import { Upload, Save, User, Lock, Mail } from 'lucide-react';
 
 export function SettingsPage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -140,8 +140,8 @@ export function SettingsPage() {
 
       {message && (
         <div
-          className={`mb-4 px-4 py-2 rounded text-sm ${
-            message.type === 'success' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'
+          className={`mb-4 px-4 py-2.5 rounded-lg text-sm glass-card ${
+            message.type === 'success' ? 'text-green-400 border-green-400/20' : 'text-red-400 border-red-400/20'
           }`}
         >
           {sanitize(message.text)}
@@ -149,19 +149,23 @@ export function SettingsPage() {
       )}
 
       <div className="space-y-6">
-        <div className="bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg p-6 space-y-4">
-          <h3 className="text-sm font-semibold">Profile</h3>
+        <div className="glass-card rounded-xl p-6 space-y-5">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-semibold">Profile</h3>
+          </div>
 
           <div className="space-y-2">
             <Label className="text-xs">Avatar</Label>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-[hsl(0,0%,12%)] flex items-center justify-center text-xl font-bold overflow-hidden"
+              <div
+                className="w-16 h-16 bg-white/5 flex items-center justify-center text-xl font-bold overflow-hidden rounded-xl border-2 border-white/10"
                 style={{ borderColor: profile.rank?.color, borderWidth: 2 }}
               >
                 <img src={avatarUrl || DEFAULT_AVATAR} alt="avatar" className="w-full h-full object-cover" />
               </div>
               <label className="cursor-pointer">
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="bg-white/5 border-white/10 hover:bg-white/10">
                   <span><Upload className="h-4 w-4 mr-1" /> Upload</span>
                 </Button>
                 <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={loading} />
@@ -172,13 +176,13 @@ export function SettingsPage() {
           <div className="space-y-2">
             <Label className="text-xs">Banner</Label>
             <div>
-              <div className="h-20 mb-2 rounded overflow-hidden bg-[hsl(0,0%,8%)]">
+              <div className="h-20 mb-2 rounded-xl overflow-hidden bg-gradient-to-r from-white/5 to-white/10 border border-white/10">
                 {bannerUrl && (
                   <img src={bannerUrl} alt="banner" className="w-full h-full object-cover" />
                 )}
               </div>
               <label className="cursor-pointer">
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="bg-white/5 border-white/10 hover:bg-white/10">
                   <span><Upload className="h-4 w-4 mr-1" /> Upload Banner</span>
                 </Button>
                 <input type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} disabled={loading} />
@@ -193,28 +197,31 @@ export function SettingsPage() {
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell something about yourself..."
               maxLength={200}
-              className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)] text-sm"
+              className="bg-white/5 border-white/10 focus:border-white/25"
             />
           </div>
 
-          <Button onClick={handleSaveProfile} disabled={loading} size="sm">
+          <Button onClick={handleSaveProfile} disabled={loading} size="sm" className="bg-white/10 hover:bg-white/15 border border-white/10">
             <Save className="h-4 w-4 mr-1" /> Save Profile
           </Button>
         </div>
 
-        <div className="bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg p-6 space-y-4">
-          <h3 className="text-sm font-semibold">Account</h3>
+        <div className="glass-card rounded-xl p-6 space-y-5">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-semibold">Account</h3>
+          </div>
 
           <div className="space-y-2">
-            <Label className="text-xs">Email</Label>
+            <Label className="text-xs flex items-center gap-1"><Mail className="h-3 w-3" /> Email</Label>
             <div className="flex gap-2">
               <Input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 type="email"
-                className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)] text-sm"
+                className="bg-white/5 border-white/10 focus:border-white/25"
               />
-              <Button onClick={handleEmailChange} disabled={loading} size="sm" variant="outline">
+              <Button onClick={handleEmailChange} disabled={loading} size="sm" variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10">
                 Update
               </Button>
             </div>
@@ -227,7 +234,7 @@ export function SettingsPage() {
               onChange={(e) => setNewPassword(e.target.value)}
               type="password"
               placeholder="New password"
-              className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)] text-sm"
+              className="bg-white/5 border-white/10 focus:border-white/25"
             />
           </div>
 
@@ -239,9 +246,9 @@ export function SettingsPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 type="password"
                 placeholder="Confirm password"
-                className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)] text-sm"
+                className="bg-white/5 border-white/10 focus:border-white/25"
               />
-              <Button onClick={handlePasswordChange} disabled={loading} size="sm" variant="outline">
+              <Button onClick={handlePasswordChange} disabled={loading} size="sm" variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10">
                 Update
               </Button>
             </div>

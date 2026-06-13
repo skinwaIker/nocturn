@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { sanitize } from '@/lib/sanitize';
-import { Clock, MessageSquare, Send, Trash2, ArrowLeft } from 'lucide-react';
+import { Clock, MessageSquare, Send, Trash2, ArrowLeft, Pin } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -109,6 +109,7 @@ export function PasteViewPage() {
   }
 
   const isOwner = user?.id === paste.user_id;
+  const isPinned = paste.pinned ?? false;
 
   return (
     <div className="flex h-[calc(100vh-3rem)]">
@@ -122,7 +123,14 @@ export function PasteViewPage() {
 
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-lg font-bold">{sanitize(paste.title)}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold">{sanitize(paste.title)}</h1>
+                {isPinned && (
+                  <span className="pin-badge text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                    <Pin className="h-2.5 w-2.5" /> Pinned
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                 <span
                   className="font-semibold cursor-pointer hover:underline"
@@ -151,7 +159,7 @@ export function PasteViewPage() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)]">
+                <DialogContent className="glass-card border-white/10">
                   <DialogHeader>
                     <DialogTitle>Delete Paste</DialogTitle>
                   </DialogHeader>
@@ -164,14 +172,14 @@ export function PasteViewPage() {
             )}
           </div>
 
-          <pre className="whitespace-pre-wrap text-sm leading-relaxed bg-[hsl(0,0%,4%)] rounded-lg p-6 border border-[hsl(0,0%,14.9%)] font-mono">
+          <pre className="whitespace-pre-wrap text-sm leading-relaxed glass-card rounded-xl p-6 font-mono">
             {sanitize(paste.content)}
           </pre>
         </div>
       </div>
 
-      <div className="w-80 shrink-0 border-l border-[hsl(0,0%,14.9%)] bg-[hsl(0,0%,4%)] flex flex-col">
-        <div className="p-3 border-b border-[hsl(0,0%,14.9%)] flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+      <div className="w-80 shrink-0 glass-sidebar flex flex-col">
+        <div className="p-3 border-b border-white/10 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
           <MessageSquare className="h-4 w-4" />
           Comments ({comments.length})
         </div>
@@ -181,7 +189,7 @@ export function PasteViewPage() {
             <p className="text-xs text-muted-foreground text-center py-8">No comments yet</p>
           )}
           {comments.map((comment) => (
-            <div key={comment.id} className="bg-[hsl(0,0%,6%)] rounded-md p-3">
+            <div key={comment.id} className="bg-white/[0.03] rounded-lg p-3 border border-white/5">
               <div className="flex items-center gap-2 mb-1">
                 <span
                   className="text-xs font-semibold cursor-pointer hover:underline"
@@ -208,13 +216,13 @@ export function PasteViewPage() {
         </div>
 
         {user && (
-          <div className="p-3 border-t border-[hsl(0,0%,14.9%)]">
+          <div className="p-3 border-t border-white/10">
             <div className="flex gap-2">
               <Textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a comment..."
-                className="min-h-[60px] bg-[hsl(0,0%,6%)] border-[hsl(0,0%,14.9%)] text-xs resize-none"
+                className="min-h-[60px] bg-white/5 border-white/10 text-xs resize-none focus:border-white/25"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -227,7 +235,7 @@ export function PasteViewPage() {
               onClick={handleComment}
               disabled={submitting || !newComment.trim()}
               size="sm"
-              className="w-full mt-2"
+              className="w-full mt-2 bg-white/10 hover:bg-white/15 border border-white/10"
             >
               <Send className="h-3 w-3 mr-1" />
               {submitting ? 'Sending...' : 'Comment'}

@@ -1,4 +1,4 @@
-import { MessageSquare, FileText, Shield, HelpCircle } from 'lucide-react';
+import { MessageSquare, FileText, Shield, HelpCircle, Settings } from 'lucide-react';
 
 export function HelpPage() {
   const topics = [
@@ -18,9 +18,14 @@ export function HelpPage() {
       content: 'Ranks are displayed next to your username across the forum. Visit the Rank Up page to purchase premium ranks, or earn staff ranks through community contribution.',
     },
     {
-      icon: HelpCircle,
+      icon: Settings,
       title: 'Account Settings',
       content: 'Update your avatar, banner, bio, email, and password from the Settings page in the left sidebar.',
+    },
+    {
+      icon: HelpCircle,
+      title: 'Signing In',
+      content: 'Use your username and password to sign in. No need to remember your email address - just your username.',
     },
   ];
 
@@ -33,13 +38,15 @@ export function HelpPage() {
         {topics.map((topic) => (
           <div
             key={topic.title}
-            className="bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg p-5"
+            className="glass-card-hover rounded-xl p-5"
           >
             <div className="flex items-center gap-2 mb-2">
-              <topic.icon className="h-4 w-4 text-muted-foreground" />
+              <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center">
+                <topic.icon className="h-4 w-4 text-muted-foreground" />
+              </div>
               <h3 className="text-sm font-semibold">{topic.title}</h3>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{topic.content}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed pl-9">{topic.content}</p>
           </div>
         ))}
       </div>

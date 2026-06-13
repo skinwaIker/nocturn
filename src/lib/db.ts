@@ -31,6 +31,7 @@ export interface Paste {
   slug: string;
   content: string;
   user_id: string;
+  pinned: boolean;
   created_at: string;
   updated_at: string;
   author?: Profile;
@@ -55,8 +56,6 @@ export interface Notification {
   created_at: string;
 }
 
-export const DEFAULT_AVATAR = 'https://i.pinimg.com/736x/07/fb/34/07fb3452c4640d881a16d08c2e314f3e.jpg';
-
 export interface Ban {
   id: string;
   user_id: string;
@@ -65,3 +64,22 @@ export interface Ban {
   shadowban: boolean;
   created_at: string;
 }
+
+export interface Warning {
+  id: string;
+  user_id: string;
+  warned_by: string;
+  reason: string;
+  created_at: string;
+}
+
+export interface UserSession {
+  id: string;
+  user_id: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  device_info: string | null;
+  last_active: string;
+}
+
+export const DEFAULT_AVATAR = 'https://i.pinimg.com/736x/07/fb/34/07fb3452c4640d881a16d08c2e314f3e.jpg';

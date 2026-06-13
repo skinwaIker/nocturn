@@ -73,7 +73,7 @@ export function AddPastePage() {
 
   return (
     <div className="flex h-[calc(100vh-3rem)]">
-      <div className="w-64 shrink-0 border-r border-[hsl(0,0%,14.9%)] bg-[hsl(0,0%,4%)] p-4 flex flex-col gap-4">
+      <div className="w-64 shrink-0 glass-sidebar p-4 flex flex-col gap-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
           <FileText className="h-4 w-4" /> New Paste
         </div>
@@ -87,12 +87,12 @@ export function AddPastePage() {
               placeholder="Paste title..."
               required
               maxLength={120}
-              className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)] text-sm"
+              className="bg-white/5 border-white/10 focus:border-white/25 text-sm"
             />
           </div>
           <div className="flex-1" />
           {error && <p className="text-xs text-red-400">{sanitize(error)}</p>}
-          <Button type="submit" disabled={loading} className="w-full">
+          <Button type="submit" disabled={loading} className="w-full bg-white/10 hover:bg-white/15 border border-white/10">
             <Send className="h-4 w-4 mr-2" />
             {loading ? 'Publishing...' : 'Publish'}
           </Button>

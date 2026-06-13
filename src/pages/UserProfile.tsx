@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase, DEFAULT_AVATAR, type Profile, type Paste, type Rank } from '@/lib/db';
+import { supabase, DEFAULT_AVATAR, type Profile, type Paste, type Rank, type Warning } from '@/lib/db';
 import { sanitize } from '@/lib/sanitize';
 import {
   Clock,
@@ -9,7 +9,8 @@ import {
   CalendarDays,
   Fingerprint,
   Copy,
-  Check,
+  Shield,
+  AlertTriangle,
 } from 'lucide-react';
 
 type ProfileWithRank = Profile & { rank: Rank };
@@ -22,7 +23,9 @@ export function UserProfilePage() {
   const { username } = useParams<{ username: string }>();
   const [profile, setProfile] = useState<ProfileWithRank | null>(null);
   const [pastes, setPastes] = useState<PasteWithCount[]>([]);
+  const [pinnedPastes, setPinnedPastes] = useState<PasteWithCount[]>([]);
   const [commentTotal, setCommentTotal] = useState(0);
+  const [warnings, setWarnings] = useState<Warning[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedUid, setCopiedUid] = useState(false);
   const navigate = useNavigate();
@@ -71,12 +74,26 @@ export function UserProfilePage() {
           countMap[c.paste_id] = (countMap[c.paste_id] || 0) + 1;
         });
       }
-      setPastes(pastesRes.data.map((p) => ({ ...p, comment_count: countMap[p.id] || 0 })));
+      const allPastes = pastesRes.data.map((p) => ({
+        ...p,
+        pinned: p.pinned ?? false,
+        comment_count: countMap[p.id] || 0,
+      }));
+      setPinnedPastes(allPastes.filter((p) => p.pinned));
+      setPastes(allPastes.filter((p) => !p.pinned));
     }
 
     if (commentCountRes.count !== null) {
       setCommentTotal(commentCountRes.count);
     }
+
+    const { data: warnsData } = await supabase
+      .from('warnings')
+      .select('*')
+      .eq('user_id', profileData.id)
+      .order('created_at', { ascending: false });
+
+    if (warnsData) setWarnings(warnsData);
 
     setLoading(false);
   };
@@ -132,84 +149,125 @@ export function UserProfilePage() {
   const avatarUrl = getAvatarUrl();
 
   return (
-    <div className="flex gap-6">
-      {/* Left column: Info blocks */}
-      <div className="w-80 shrink-0 space-y-4">
-        {/* Block 1: Avatar + Identity */}
-        <div className="bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg overflow-hidden">
-          <div className="h-24 overflow-hidden bg-[hsl(0,0%,8%)]">
-            {bannerUrl && (
+    <div className="max-w-5xl mx-auto">
+      {/* Banner Section */}
+      <div className="relative glass-card rounded-xl overflow-hidden mb-6">
+        <div className="h-40 overflow-hidden bg-gradient-to-r from-white/5 to-white/10 relative">
+          {bannerUrl ? (
+            <img src={bannerUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-white/[0.06]" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+
+        {/* Profile info overlaid on banner */}
+        <div className="relative px-6 pb-6 -mt-12">
+          <div className="flex items-end gap-5">
+            <div className="w-24 h-24 rounded-2xl bg-black/40 backdrop-blur-sm flex items-center justify-center text-3xl font-bold overflow-hidden shrink-0 border-2 border-white/10 shadow-xl">
               <img
-                src={bannerUrl}
+                src={avatarUrl || DEFAULT_AVATAR}
                 alt=""
                 className="w-full h-full object-cover"
               />
-            )}
-          </div>
-          <div className="-mt-8 p-5">
-            <div className="flex items-start gap-4">
-              <div className="w-20 h-20 bg-[hsl(0,0%,8%)] flex items-center justify-center text-3xl font-bold overflow-hidden shrink-0">
-                <img
-                  src={avatarUrl || DEFAULT_AVATAR}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <h2 className="text-lg font-bold tracking-tight truncate">
+            </div>
+            <div className="flex-1 min-w-0 pb-1">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold tracking-tight">
                   @{sanitize(profile.username)}
                 </h2>
                 <span
-                  className="inline-block text-[10px] font-bold px-2 py-0.5 rounded mt-1"
+                  className="text-[11px] font-bold px-2.5 py-1 rounded-md"
                   style={{
                     backgroundColor: profile.rank?.color + '22',
                     color: profile.rank?.color,
+                    border: `1px solid ${profile.rank?.color}33`,
                   }}
                 >
                   {profile.rank?.name ?? 'User'}
                 </span>
               </div>
+              {profile.bio && (
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                  {sanitize(profile.bio)}
+                </p>
+              )}
             </div>
-            {profile.bio && (
-              <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-                {sanitize(profile.bio)}
-              </p>
-            )}
-            {!profile.bio && (
-              <p className="text-xs text-muted-foreground/40 mt-4 italic">No bio set</p>
-            )}
           </div>
-        </div>
-
-        {/* Block 2: Stats */}
-        <div className="bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg p-5 space-y-3">
-          <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-            Information
-          </h3>
-          <StatRow icon={Fingerprint} label="UID">
-            <span className="font-mono text-xs text-muted-foreground">{profile.id.substring(0, 8)}</span>
-            <button
-              onClick={copyUid}
-              className="ml-1.5 p-0.5 rounded hover:bg-[hsl(0,0%,12%)] transition-colors text-muted-foreground hover:text-white"
-            >
-              {copiedUid ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
-            </button>
-          </StatRow>
-          <StatRow icon={CalendarDays} label="Joined">
-            <span className="text-xs text-muted-foreground">{formatDate(profile.created_at)}</span>
-          </StatRow>
-          <StatRow icon={FileText} label="Pastes">
-            <span className="text-xs font-mono">{pastes.length}</span>
-          </StatRow>
-          <StatRow icon={MessageSquare} label="Comments">
-            <span className="text-xs font-mono">{commentTotal}</span>
-          </StatRow>
         </div>
       </div>
 
-      {/* Right column: Pastes */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-4">
+      {/* Stats Row */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        <StatCard icon={Fingerprint} label="UID" value={profile.id.substring(0, 8)} mono onClick={copyUid} clickable />
+        <StatCard icon={CalendarDays} label="Joined" value={formatDate(profile.created_at)} />
+        <StatCard icon={FileText} label="Pastes" value={String(pastes.length + pinnedPastes.length)} mono />
+        <StatCard icon={MessageSquare} label="Comments" value={String(commentTotal)} mono />
+      </div>
+
+      {/* Warnings */}
+      {warnings.length > 0 && (
+        <div className="glass-card rounded-xl p-5 mb-6 border-amber-500/20">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="h-4 w-4 text-amber-400" />
+            <h3 className="text-sm font-semibold text-amber-400">Active Warnings</h3>
+            <span className="text-[10px] bg-amber-400/15 text-amber-400 px-2 py-0.5 rounded-full ml-auto">
+              {warnings.length}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {warnings.map((w) => (
+              <div key={w.id} className="bg-amber-400/5 border border-amber-400/10 rounded-lg p-3">
+                <p className="text-xs text-amber-200">{sanitize(w.reason)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{formatDate(w.created_at)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Pinned Pastes */}
+      {pinnedPastes.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="h-4 w-4 text-amber-400" />
+            <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider">Pinned Pastes</h3>
+          </div>
+          <div className="space-y-2">
+            {pinnedPastes.map((paste) => (
+              <button
+                key={paste.id}
+                onClick={() => navigate(`/p/${paste.slug}`)}
+                className="w-full text-left glass-card-hover rounded-lg p-4 group"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold group-hover:text-white transition-colors truncate">
+                    {sanitize(paste.title)}
+                  </span>
+                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground shrink-0">
+                    <span className="flex items-center gap-1">
+                      <MessageSquare className="h-3 w-3" />
+                      {paste.comment_count}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {formatRelative(paste.created_at)}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+                  {sanitize(paste.content.substring(0, 250))}
+                </p>
+              </button>
+            ))}
+          </div>
+          <div className="my-4 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        </div>
+      )}
+
+      {/* Regular Pastes */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             Pastes
@@ -219,18 +277,18 @@ export function UserProfilePage() {
           </span>
         </div>
 
-        {pastes.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg">
+        {pastes.length === 0 && pinnedPastes.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground glass-card rounded-xl">
             <FileText className="h-8 w-8 mx-auto mb-3 opacity-20" />
             <p className="text-sm">No pastes yet</p>
           </div>
-        ) : (
+        ) : pastes.length === 0 ? null : (
           <div className="space-y-2">
             {pastes.map((paste) => (
               <button
                 key={paste.id}
                 onClick={() => navigate(`/p/${paste.slug}`)}
-                className="w-full text-left bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg p-4 hover:border-[hsl(0,0%,25%)] transition-all group"
+                className="w-full text-left glass-card-hover rounded-lg p-4 group"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold group-hover:text-white transition-colors truncate">
@@ -255,28 +313,50 @@ export function UserProfilePage() {
           </div>
         )}
       </div>
+
+      {copiedUid && (
+        <div className="fixed bottom-6 right-6 glass-card rounded-lg px-4 py-2 text-sm text-green-400 border-green-400/20 z-50 animate-in fade-in slide-in-from-bottom-2">
+          UID copied!
+        </div>
+      )}
     </div>
   );
 }
 
-function StatRow({
+function StatCard({
   icon: Icon,
   label,
-  children,
+  value,
+  mono,
+  onClick,
+  clickable,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  children: React.ReactNode;
+  value: string;
+  mono?: boolean;
+  onClick?: () => void;
+  clickable?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 py-1">
-      <div className="w-6 h-6 rounded bg-[hsl(0,0%,10%)] flex items-center justify-center shrink-0">
-        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+    <button
+      onClick={onClick}
+      className={`glass-card rounded-xl p-4 text-left ${clickable ? 'cursor-pointer hover:bg-white/[0.06] transition-colors' : 'cursor-default'}`}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center">
+          <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
       </div>
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground w-16 shrink-0">
-        {label}
-      </span>
-      <div className="flex-1 min-w-0">{children}</div>
-    </div>
+      <p className={`text-sm font-semibold ${mono ? 'font-mono' : ''}`}>
+        {value}
+        {label === 'UID' && (
+          <span className="ml-1.5 text-muted-foreground">
+            {clickable ? <Copy className="h-3 w-3 inline" /> : null}
+          </span>
+        )}
+      </p>
+    </button>
   );
 }

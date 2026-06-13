@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { sanitize } from '@/lib/sanitize';
+import { UserPlus } from 'lucide-react';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 
@@ -46,69 +47,81 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="max-w-sm mx-auto mt-16">
-      <h2 className="text-xl font-bold mb-6 text-center">Create Account</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
-          <Input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="your_username"
-            required
-            maxLength={20}
-            className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)]"
-          />
+    <div className="flex items-center justify-center min-h-[calc(100vh-3rem)]">
+      <div className="w-full max-w-sm mx-auto">
+        <div className="glass-card p-8 rounded-xl border border-white/10">
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10">
+              <UserPlus className="h-6 w-6 text-white" />
+            </div>
+          </div>
+          <h2 className="text-xl font-bold mb-1 text-center">Create Account</h2>
+          <p className="text-sm text-muted-foreground mb-6 text-center">Join the Nocturn community</p>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="your_username"
+                required
+                maxLength={20}
+                className="bg-white/5 border-white/10 focus:border-white/25"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@email.com"
+                required
+                className="bg-white/5 border-white/10 focus:border-white/25"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Min 6 characters"
+                required
+                className="bg-white/5 border-white/10 focus:border-white/25"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repeat password"
+                required
+                className="bg-white/5 border-white/10 focus:border-white/25"
+              />
+            </div>
+            {error && (
+              <p className="text-sm text-red-400 bg-red-400/10 px-3 py-2 rounded-lg">{sanitize(error)}</p>
+            )}
+            <Button type="submit" className="w-full bg-white/10 hover:bg-white/15 border border-white/10" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </Button>
+            <p className="text-sm text-center text-muted-foreground">
+              Already have an account?{' '}
+              <button type="button" onClick={() => navigate('/login')} className="text-white hover:underline">
+                Sign In
+              </button>
+            </p>
+          </form>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@email.com"
-            required
-            className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)]"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Min 6 characters"
-            required
-            className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)]"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirm-password">Confirm Password</Label>
-          <Input
-            id="confirm-password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Repeat password"
-            required
-            className="bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)]"
-          />
-        </div>
-        {error && <p className="text-sm text-red-400">{sanitize(error)}</p>}
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Creating account...' : 'Create Account'}
-        </Button>
-        <p className="text-sm text-center text-muted-foreground">
-          Already have an account?{' '}
-          <button type="button" onClick={() => navigate('/login')} className="text-white hover:underline">
-            Sign In
-          </button>
-        </p>
-      </form>
+      </div>
     </div>
   );
 }
