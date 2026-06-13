@@ -13,20 +13,8 @@ import { Upload, Save } from 'lucide-react';
 export function SettingsPage() {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const [avatarUrl, setAvatarUrl] = useState<string>(() => {
-    const userId = user?.id;
-    if (userId) {
-      return `/avatars/${userId}`;
-    }
-    return '';
-  });
-  const [bannerUrl, setBannerUrl] = useState<string>(() => {
-    const userId = user?.id;
-    if (userId) {
-      return `/banners/${userId}`;
-    }
-    return '';
-  });
+  const [avatarUrl, setAvatarUrl] = useState<string>(() => profile?.avatar_url || '');
+  const [bannerUrl, setBannerUrl] = useState<string>(() => profile?.banner_url || '');
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
   const [newPassword, setNewPassword] = useState('');
@@ -55,7 +43,16 @@ export function SettingsPage() {
       return;
     }
 
-    setAvatarUrl(`/avatars/${user.id}.${file.name.split('.').pop()}?t=${Date.now()}`);
+    const newUrl = `/img/avatars/${user.id}.${file.name.split('.').pop()}?t=${Date.now()}`;
+    const { error } = await supabase.from('profiles').update({ avatar_url: newUrl }).eq('id', user.id);
+    if (error) {
+      setMessage({ type: 'error', text: error.message });
+      setLoading(false);
+      return;
+    }
+
+    setAvatarUrl(newUrl);
+    await refreshProfile();
     setMessage({ type: 'success', text: 'Avatar updated' });
     setLoading(false);
   };
@@ -73,7 +70,16 @@ export function SettingsPage() {
       return;
     }
 
-    setBannerUrl(`/banners/${user.id}.${file.name.split('.').pop()}?t=${Date.now()}`);
+    const newUrl = `/img/banners/${user.id}.${file.name.split('.').pop()}?t=${Date.now()}`;
+    const { error } = await supabase.from('profiles').update({ banner_url: newUrl }).eq('id', user.id);
+    if (error) {
+      setMessage({ type: 'error', text: error.message });
+      setLoading(false);
+      return;
+    }
+
+    setBannerUrl(newUrl);
+    await refreshProfile();
     setMessage({ type: 'success', text: 'Banner updated' });
     setLoading(false);
   };
@@ -152,9 +158,7 @@ export function SettingsPage() {
               <div className="w-16 h-16 bg-[hsl(0,0%,12%)] flex items-center justify-center text-xl font-bold overflow-hidden"
                 style={{ borderColor: profile.rank?.color, borderWidth: 2 }}
               >
-                <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => {
-                  e.currentTarget.src = DEFAULT_AVATAR;
-                }} />
+                <img src={avatarUrl || DEFAULT_AVATAR} alt="avatar" className="w-full h-full object-cover" />
               </div>
               <label className="cursor-pointer">
                 <Button variant="outline" size="sm" asChild>
@@ -169,9 +173,9 @@ export function SettingsPage() {
             <Label className="text-xs">Banner</Label>
             <div>
               <div className="h-20 mb-2 rounded overflow-hidden bg-[hsl(0,0%,8%)]">
-                <img src={bannerUrl} alt="banner" className="w-full h-full object-cover" onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }} />
+                {bannerUrl && (
+                  <img src={bannerUrl} alt="banner" className="w-full h-full object-cover" />
+                )}
               </div>
               <label className="cursor-pointer">
                 <Button variant="outline" size="sm" asChild>

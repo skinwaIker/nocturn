@@ -106,13 +106,8 @@ export function UserProfilePage() {
     setTimeout(() => setCopiedUid(false), 2000);
   };
 
-  const getAvatarUrl = (userId: string) => {
-    return `/avatars/${userId}`;
-  };
-
-  const getBannerUrl = (userId: string) => {
-    return `/banners/${userId}`;
-  };
+  const getAvatarUrl = () => profile?.avatar_url || '';
+  const getBannerUrl = () => profile?.banner_url || '';
 
   if (loading) {
     return (
@@ -133,8 +128,8 @@ export function UserProfilePage() {
     );
   }
 
-  const bannerUrl = getBannerUrl(profile.id);
-  const avatarUrl = getAvatarUrl(profile.id);
+  const bannerUrl = getBannerUrl();
+  const avatarUrl = getAvatarUrl();
 
   return (
     <div className="flex gap-6">
@@ -143,25 +138,21 @@ export function UserProfilePage() {
         {/* Block 1: Avatar + Identity */}
         <div className="bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg overflow-hidden">
           <div className="h-24 overflow-hidden bg-[hsl(0,0%,8%)]">
-            <img
-              src={bannerUrl}
-              alt=""
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
+            {bannerUrl && (
+              <img
+                src={bannerUrl}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
           <div className="-mt-8 p-5">
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 bg-[hsl(0,0%,8%)] flex items-center justify-center text-3xl font-bold overflow-hidden shrink-0">
                 <img
-                  src={avatarUrl}
+                  src={avatarUrl || DEFAULT_AVATAR}
                   alt=""
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = DEFAULT_AVATAR;
-                  }}
                 />
               </div>
               <div className="flex-1 min-w-0 pt-0.5">

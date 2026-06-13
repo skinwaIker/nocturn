@@ -71,7 +71,7 @@ export function Sidebar() {
     { icon: HelpCircle, label: 'Help', path: '/help' },
   ];
 
-  const getAvatarUrl = (userId: string) => `/avatars/${userId}`;
+  const getAvatarUrl = () => profile?.avatar_url || '';
 
   return (
     <aside className="fixed left-0 top-0 h-full w-56 bg-[hsl(0,0%,5%)] border-r border-[hsl(0,0%,14.9%)] flex flex-col z-30">
@@ -94,12 +94,9 @@ export function Sidebar() {
                   style={{ borderColor: profile.rank?.color, borderWidth: 2 }}
                 >
                   <img
-                    src={getAvatarUrl(user.id)}
+                    src={getAvatarUrl() || DEFAULT_AVATAR}
                     alt=""
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = DEFAULT_AVATAR;
-                    }}
                   />
                 </div>
                 <div className="flex-1 min-w-0">
