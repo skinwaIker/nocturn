@@ -71,6 +71,8 @@ export function Sidebar() {
     { icon: HelpCircle, label: 'Help', path: '/help' },
   ];
 
+  const getAvatarUrl = (userId: string) => `/avatars/${userId}`;
+
   return (
     <aside className="fixed left-0 top-0 h-full w-56 bg-[hsl(0,0%,5%)] border-r border-[hsl(0,0%,14.9%)] flex flex-col z-30">
       <div className="p-4 border-b border-[hsl(0,0%,14.9%)]">
@@ -88,14 +90,18 @@ export function Sidebar() {
             <DropdownMenuTrigger asChild>
               <button className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[hsl(0,0%,10%)] transition-colors text-left">
                 <div
-                  className="w-8 h-8 rounded-full bg-[hsl(0,0%,15%)] flex items-center justify-center text-xs font-bold overflow-hidden"
+                  className="w-8 h-8 bg-[hsl(0,0%,15%)] flex items-center justify-center text-xs font-bold overflow-hidden flex-shrink-0"
                   style={{ borderColor: profile.rank?.color, borderWidth: 2 }}
                 >
-                  {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    profile.username[0].toUpperCase()
-                  )}
+                  <img 
+                    src={getAvatarUrl(user.id)} 
+                    alt="" 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <span className="hidden">{profile.username[0].toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -111,7 +117,7 @@ export function Sidebar() {
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start" className="w-48 bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)]">
+            <DropdownMenuContent side="bottom" align="start" className="w-48 bg-[hsl(0,0%,7%)] border-[hsl(0,0%,14.9%)]">
               <DropdownMenuItem onClick={() => navigate(`/u/${profile.username}`)} className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" /> Profile
               </DropdownMenuItem>

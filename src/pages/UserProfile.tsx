@@ -106,6 +106,14 @@ export function UserProfilePage() {
     setTimeout(() => setCopiedUid(false), 2000);
   };
 
+  const getAvatarUrl = (userId: string) => {
+    return `/avatars/${userId}`;
+  };
+
+  const getBannerUrl = (userId: string) => {
+    return `/banners/${userId}`;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -125,29 +133,39 @@ export function UserProfilePage() {
     );
   }
 
+  const bannerUrl = getBannerUrl(profile.id);
+  const avatarUrl = getAvatarUrl(profile.id);
+
   return (
     <div className="flex gap-6">
       {/* Left column: Info blocks */}
       <div className="w-80 shrink-0 space-y-4">
         {/* Block 1: Avatar + Identity */}
         <div className="bg-[hsl(0,0%,5.9%)] border border-[hsl(0,0%,14.9%)] rounded-lg overflow-hidden">
-          {profile.banner_url && (
-            <div className="h-24 overflow-hidden">
-              <img src={profile.banner_url} alt="" className="w-full h-full object-cover" />
-            </div>
-          )}
-          <div className={`p-5 ${profile.banner_url ? '-mt-8' : ''}`}>
+          <div className="h-24 overflow-hidden bg-[hsl(0,0%,8%)]">
+            <img 
+              src={bannerUrl} 
+              alt="" 
+              className="w-full h-full object-cover" 
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+          <div className="-mt-8 p-5">
             <div className="flex items-start gap-4">
-              <div
-                className="w-20 h-20 bg-[hsl(0,0%,8%)] flex items-center justify-center text-3xl font-bold overflow-hidden shrink-0"
-              >
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span style={{ color: profile.rank?.color }}>
-                    {profile.username[0].toUpperCase()}
-                  </span>
-                )}
+              <div className="w-20 h-20 bg-[hsl(0,0%,8%)] flex items-center justify-center text-3xl font-bold overflow-hidden shrink-0">
+                <img 
+                  src={avatarUrl} 
+                  alt="" 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                <span className="hidden" style={{ color: profile.rank?.color }}>
+                  {profile.username[0].toUpperCase()}
+                </span>
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
                 <h2 className="text-lg font-bold tracking-tight truncate">

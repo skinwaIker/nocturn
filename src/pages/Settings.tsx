@@ -7,13 +7,26 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/lib/db';
 import { sanitize } from '@/lib/sanitize';
+import { uploadToLocalStorage } from '@/lib/fileUpload';
 import { Upload, Save } from 'lucide-react';
 
 export function SettingsPage() {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '');
-  const [bannerUrl, setBannerUrl] = useState(profile?.banner_url ?? '');
+  const [avatarUrl, setAvatarUrl] = useState<string>(() => {
+    const userId = user?.id;
+    if (userId) {
+      return `/avatars/${userId}`;
+    }
+    return '';
+  });
+  const [bannerUrl, setBannerUrl] = useState<string>(() => {
+    const userId = user?.id;
+    if (userId) {
+      return `/banners/${userId}`;
+    }
+    return '';
+  });
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
   const [newPassword, setNewPassword] = useState('');
@@ -33,57 +46,43 @@ export function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const ext = file.name.split('.').pop();
-    const path = `avatars/${user.id}.${ext}`;
+    setLoading(true);
+    const result = await uploadToLocalStorage(file, 'avatars', user.id);
 
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true });
-
-    if (uploadError) {
-      setMessage({ type: 'error', text: uploadError.message });
+    if (!result.success) {
+      setMessage({ type: 'error', text: result.error || 'Upload failed' });
+      setLoading(false);
       return;
     }
 
-    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-    const url = data.publicUrl + '?t=' + Date.now();
-    setAvatarUrl(url);
-
-    await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
-    refreshProfile();
+    setAvatarUrl(`/avatars/${user.id}.${file.name.split('.').pop()}?t=${Date.now()}`);
     setMessage({ type: 'success', text: 'Avatar updated' });
+    setLoading(false);
   };
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const ext = file.name.split('.').pop();
-    const path = `banners/${user.id}.${ext}`;
+    setLoading(true);
+    const result = await uploadToLocalStorage(file, 'banners', user.id);
 
-    const { error: uploadError } = await supabase.storage
-      .from('banners')
-      .upload(path, file, { upsert: true });
-
-    if (uploadError) {
-      setMessage({ type: 'error', text: uploadError.message });
+    if (!result.success) {
+      setMessage({ type: 'error', text: result.error || 'Upload failed' });
+      setLoading(false);
       return;
     }
 
-    const { data } = supabase.storage.from('banners').getPublicUrl(path);
-    const url = data.publicUrl + '?t=' + Date.now();
-    setBannerUrl(url);
-
-    await supabase.from('profiles').update({ banner_url: url }).eq('id', user.id);
-    refreshProfile();
+    setBannerUrl(`/banners/${user.id}.${file.name.split('.').pop()}?t=${Date.now()}`);
     setMessage({ type: 'success', text: 'Banner updated' });
+    setLoading(false);
   };
 
   const handleSaveProfile = async () => {
     setLoading(true);
     const { error } = await supabase
       .from('profiles')
-      .update({ bio: bio.trim(), avatar_url: avatarUrl, banner_url: bannerUrl })
+      .update({ bio: bio.trim() })
       .eq('id', user.id);
 
     if (error) {
@@ -150,20 +149,19 @@ export function SettingsPage() {
           <div className="space-y-2">
             <Label className="text-xs">Avatar</Label>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-[hsl(0,0%,12%)] flex items-center justify-center text-xl font-bold overflow-hidden border-2"
-                style={{ borderColor: profile.rank?.color }}
+              <div className="w-16 h-16 bg-[hsl(0,0%,12%)] flex items-center justify-center text-xl font-bold overflow-hidden"
+                style={{ borderColor: profile.rank?.color, borderWidth: 2 }}
               >
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  profile.username[0].toUpperCase()
-                )}
+                <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }} />
+                <span className="hidden">{profile.username[0].toUpperCase()}</span>
               </div>
               <label className="cursor-pointer">
                 <Button variant="outline" size="sm" asChild>
                   <span><Upload className="h-4 w-4 mr-1" /> Upload</span>
                 </Button>
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={loading} />
               </label>
             </div>
           </div>
@@ -171,16 +169,16 @@ export function SettingsPage() {
           <div className="space-y-2">
             <Label className="text-xs">Banner</Label>
             <div>
-              {bannerUrl && (
-                <div className="h-20 mb-2 rounded overflow-hidden">
-                  <img src={bannerUrl} alt="" className="w-full h-full object-cover" />
-                </div>
-              )}
+              <div className="h-20 mb-2 rounded overflow-hidden bg-[hsl(0,0%,8%)]">
+                <img src={bannerUrl} alt="banner" className="w-full h-full object-cover" onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }} />
+              </div>
               <label className="cursor-pointer">
                 <Button variant="outline" size="sm" asChild>
                   <span><Upload className="h-4 w-4 mr-1" /> Upload Banner</span>
                 </Button>
-                <input type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
+                <input type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} disabled={loading} />
               </label>
             </div>
           </div>

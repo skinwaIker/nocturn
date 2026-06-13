@@ -13,6 +13,10 @@ dist-ssr
 *.local
 .env
 
+# Local images
+img/
+!img/.gitkeep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
